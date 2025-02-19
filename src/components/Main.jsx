@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { MoreHorizontal, UserPlus, Edit2, Check, X } from 'react-feather'; // Import icons
+import { MoreHorizontal, UserPlus, Edit2, Check, X, Image as ImageIcon } from 'react-feather'; // Import Image icon
 import CardAdd from './CardAdd';
 import { BoardContext } from '../context/BoardContext';
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -12,7 +12,7 @@ function Main() {
 
     function onDragEnd(res) {
         if (!res.destination) return;
-    
+
         const { source, destination } = res;
         const sourceListIndex = bdata.lists.findIndex(list => list.id === source.droppableId);
         const destListIndex = bdata.lists.findIndex(list => list.id === destination.droppableId);
@@ -63,6 +63,20 @@ function Main() {
         setAllBoard(board_);
 
         setEditingCard(null);
+    };
+
+    const handleImageUpload = (e, listIndex, cardIndex) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+
+            let newLists = [...bdata.lists];
+            newLists[listIndex].items[cardIndex].image = imageUrl;
+
+            let board_ = { ...allboard };
+            board_.boards[board_.active].lists = newLists;
+            setAllBoard(board_);
+        }
     };
 
     const cardData = (e, ind) => {
@@ -133,32 +147,27 @@ function Main() {
                                                                             autoFocus
                                                                         />
                                                                     ) : (
-                                                                        <span>{item.title}</span>
+                                                                        <div className="flex flex-col">
+                                                                            {item.image && (
+                                                                                <img src={item.image} alt="Uploaded" className="w-full h-auto rounded-md mb-2" />
+                                                                            )}
+                                                                            <span className="break-words max-w-full whitespace-normal">{item.title}</span>
+                                                                        </div>
                                                                     )}
                                                                     <span className='flex'>
-                                                                        {editingCard === item.id ? (
-                                                                            <>
-                                                                                <button
-                                                                                    className='hover:bg-gray-600 p-1 rounded-sm'
-                                                                                    onClick={() => saveEdit(listIndex, cardIndex)}
-                                                                                >
-                                                                                    <Check size={16} />
-                                                                                </button>
-                                                                                <button
-                                                                                    className='hover:bg-gray-600 p-1 rounded-sm'
-                                                                                    onClick={() => setEditingCard(null)}
-                                                                                >
-                                                                                    <X size={16} />
-                                                                                </button>
-                                                                            </>
-                                                                        ) : (
-                                                                            <button
-                                                                                className='hover:bg-gray-600 p-1 rounded-sm'
-                                                                                onClick={() => startEditing(item.id, item.title)}
-                                                                            >
-                                                                                <Edit2 size={16} />
-                                                                            </button>
-                                                                        )}
+                                                                        <input
+                                                                            type="file"
+                                                                            accept="image/*"
+                                                                            className="hidden"
+                                                                            id={`upload-${item.id}`}
+                                                                            onChange={(e) => handleImageUpload(e, listIndex, cardIndex)}
+                                                                        />
+                                                                        <label htmlFor={`upload-${item.id}`} className="hover:bg-gray-600 p-1 rounded-sm cursor-pointer">
+                                                                            <ImageIcon size={16} />
+                                                                        </label>
+                                                                        <button className='hover:bg-gray-600 p-1 rounded-sm' onClick={() => startEditing(item.id, item.title)}>
+                                                                            <Edit2 size={16} />
+                                                                        </button>
                                                                     </span>
                                                                 </div>
                                                             </div>
