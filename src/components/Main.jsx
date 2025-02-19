@@ -109,10 +109,11 @@ function Main() {
                 </div>
             </div>
             <div className='flex flex-col w-full flex-grow relative'>
-                <div className='absolute mb-1 pb-2 left-0 right-0 top-0 bottom-0 p-3 flex overflow-x-scroll overflow-y-hidden'>
+                <div className='absolute mb-1 pb-2 left-0 right-0 top-0 bottom-0 p-3 flex overflow-x-auto overflow-y-hidden'>
+                <div className='flex flex-nowrap space-x-4 w-max'>
                     <DragDropContext onDragEnd={onDragEnd}>
                         {bdata.lists && bdata.lists.map((x, listIndex) => (
-                            <div key={x.id} className='mr-3 w-60 h-fit rounded-md p-2 bg-black'>
+                            <div key={x.id} className='mr-3 w-60 h-fit rounded-md p-2 bg-black flex flex-col'>
                                 <div className="list-body">
                                     <div className='flex justify-between p-1'>
                                         <span>{x.title}</span>
@@ -134,7 +135,7 @@ function Main() {
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
                                                             >
-                                                                <div className='item flex justify-between items-center bg-zinc-700 p-2 cursor-pointer rounded-md border-2 border-zinc-900 hover:border-gray-500 '>
+                                                                <div className='item flex flex-col items-start bg-zinc-700 p-2 cursor-pointer rounded-md border-2 border-zinc-900 hover:border-gray-500 '>
                                                                     {editingCard === item.id ? (
                                                                         <input
                                                                             type="text"
@@ -147,7 +148,7 @@ function Main() {
                                                                             autoFocus
                                                                         />
                                                                     ) : (
-                                                                        <div className="flex flex-col">
+                                                                        <div className="flex flex-col w-full">
                                                                             {item.image && (
                                                                                 <img src={item.image} alt="Uploaded" className="w-full h-auto rounded-md mb-2" />
                                                                             )}
@@ -184,6 +185,7 @@ function Main() {
                         ))}
                     </DragDropContext>
                     <AddList getlist={listData} />
+                </div>
                 </div>
             </div>
         </div>
