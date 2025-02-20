@@ -5,13 +5,14 @@ import Sidebar from './components/Sidebar'
 import Main from './components/Main'
 import { BoardContext } from './context/BoardContext'
 
+
 function App() {
   const boardData= {
     active:0,
     boards:[
       {
         name: "My Trello Board",
-        bgcolor:"#069000",
+        bgcolor:"#EC96F8",
         lists:[
           {id:"1", title:"To do",items:[{id:"cdrFt", title:"Project Description 1"}]},
           {id:"2", title:"In Progress",items:[{id:"cdfdr", title:"Project Description 2"}]},

@@ -47,7 +47,7 @@ function Sidebar() {
                         <Popover
                             isOpen={showpop}
                             align='start'
-                            positions={['right', 'top', 'bottom', 'left']} // preferred positions by priority
+                            positions={['right', 'top', 'bottom', 'left']} 
                             content={
                                 <div className='ml-2 p-2 w-60 flex flex-col justify-center items-center bg-slate-500 text-white rounded'>
                                     <button onClick={() => setShowPop(!showpop)} className='absolute right-2 top-2 hover:bg-gray-500 p-1 rounded'><X size={16}></X></button>
