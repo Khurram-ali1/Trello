@@ -12,11 +12,11 @@ function App() {
     boards:[
       {
         name: "My Trello Board",
-        bgcolor:"#EC96F8",
+        bgcolor:"",
         lists:[
           {id:"1", title:"To do",items:[{id:"cdrFt", title:"Project Description 1"}]},
           {id:"2", title:"In Progress",items:[{id:"cdfdr", title:"Project Description 2"}]},
-          {id:"3", title:"Completed",items:[{id:"cdfdr", title:"Project Description 3"}]},
+          {id:"3", title:"Completed",items:[{id:"cdfer", title:"Project Description 3"}]},
         ]
       }
     ]

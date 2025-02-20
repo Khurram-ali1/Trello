@@ -19,9 +19,9 @@ function AddList(props) {
       
     }
   return (
-    <div className='flex flex-col h-fit flex-shrink-0 mr-3 w-60 rounded-md p-2 bg-black'>
+    <div className='flex flex-col h-fit flex-shrink-0 mr-3 w-60 rounded-md p-2 bg-white text-black'>
        {show && <div>
-            <textarea value={list} onChange={(e)=>setlist(e.target.value)} className='p-1 w-full rounded-md border-2 bg-zinc-700 border-zinc-900' placeholder='Enter list Title...' name="" id="" cols={30} rows={2}></textarea>
+            <textarea value={list} onChange={(e)=>setlist(e.target.value)} className='p-1 w-full rounded-md border-2 bg-white border-zinc-900' placeholder='Enter list Title...' name="" id="" cols={30} rows={2}></textarea>
             <div className='flex p-1'>
             <button onClick={()=>savelist()} className='p-1 rounded bg-sky-600 text-white mr-2'>Add list</button>
             <button onClick={()=> closeBtn()} className='p-1 rounded hover:bg-gray-500'><X size={16}></X></button>

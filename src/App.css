@@ -1,5 +1,13 @@
 body{
-    background: #333;
-    color: #ffffff;
-    font-size: 14px;
+   
+        background-image: url('./assets/background.jpg'); /* Ensure the correct path */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      color: white;
+      
+      
+}
+html{
+    overflow: hidden;
 }
