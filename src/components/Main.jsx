@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { MoreHorizontal, UserPlus, Edit2, Image as ImageIcon, X } from 'react-feather';
+import { MoreHorizontal, UserPlus, Edit2 ,Trash2,Image as ImageIcon, X } from 'react-feather';
 import CardAdd from './CardAdd';
 import { BoardContext } from '../context/BoardContext';
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -10,13 +10,17 @@ function Main() {
     const { allboard, setAllBoard } = useContext(BoardContext);
     const bdata = allboard.boards[allboard.active];
 
-    // States for managing popups
+
     const [selectedCard, setSelectedCard] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [editTitle, setEditTitle] = useState("");
     const [editImage, setEditImage] = useState("");
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editCommentIndex, setEditCommentIndex] = useState(null);
+    const [editCommentText, setEditCommentText] = useState("");
+
 
     function onDragEnd(res) {
         if (!res.destination) return;
@@ -55,11 +59,27 @@ function Main() {
         setComments([...comments, newComment]);
         setNewComment("");
     };
+    const startEditingComment = (index, text) => {
+        setEditCommentIndex(index);
+        setEditCommentText(text);
+    };
+    const saveEditedComment = (index) => {
+        let updatedComments = [...comments];
+        updatedComments[index] = editCommentText;
+        setComments(updatedComments);
+        setEditCommentIndex(null);
+        setEditCommentText("");
+    };
 
+    const deleteComment = (index) => {
+        let updatedComments = comments.filter((_, i) => i !== index);
+        setComments(updatedComments);
+    };
     const openPopup = (card, listIndex, cardIndex) => {
         setSelectedCard({ ...card, listIndex, cardIndex });
         setEditTitle(card.title);
         setEditImage(card.image || "");
+        setEditDescription(card.description || "");
         setComments(card.comments || []);
         setShowPopup(true);
     };
@@ -78,6 +98,7 @@ function Main() {
             ...newLists[selectedCard.listIndex].items[selectedCard.cardIndex],
             title: editTitle,
             image: editImage,
+            description: editDescription,
             comments: comments
         };
 
@@ -121,8 +142,8 @@ function Main() {
     };
 
     return (
-        <div className='flex flex-col w-full ' style={{ backgroundColor: `${bdata.bgcolor}` }}>
-            <div className='p-3 bg-[#474648] flex justify-between w-full bg-opacity-50'>
+        <div className='flex flex-col w-full' style={{ backgroundColor: `${bdata.bgcolor}` }}>
+            <div className='p-3 bg-[#5d5b5f7c] flex justify-between w-full bg-opacity-50'>
                 <h2 className='text-lg'>{bdata.name}</h2>
                 <div className='flex items-center justify-center'>
                     <button className='bg-gray-200 text-gray-500 px-2 h-8 py-1 mr-2 rounded flex items-center'>
@@ -161,13 +182,13 @@ function Main() {
                                                     <Draggable key={item.id} draggableId={item.id} index={cardIndex}>
                                                         {(provided) => (
                                                             <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
-                                                            className='bg-white p-2 rounded-md border-2 border-zinc-900 hover:border-gray-500 cursor-pointer flex-shrink-0'
-                                                            onClick={() => openPopup(item, listIndex, cardIndex)} 
-                                                        >
-                                                        
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
+                                                                className='bg-white p-2 rounded-md border-2 border-zinc-900 hover:border-gray-500 cursor-pointer flex-shrink-0'
+                                                                onClick={() => openPopup(item, listIndex, cardIndex)}
+                                                            >
+
 
                                                                 {item.image && (
                                                                     <img src={item.image} alt='Uploaded' className='w-full h-32 object-cover rounded-md mb-2' />
@@ -200,16 +221,53 @@ function Main() {
                             <input type="file" accept="image/*" className="mt-2 text-blue-400" onChange={handleImageUpload} />
                             {editImage && <img src={editImage} alt="Preview" className="w-full mt-2 rounded-md" />}
 
+                            <h4 className="text-black text-md mt-4">Description</h4>
+                            <textarea
+                                className="w-full p-2 border rounded text-black"
+                                rows="4"
+                                placeholder="Add a description..."
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                            ></textarea>
+
+
                             <div className="mt-4">
                                 <h4 className="text-black text-md mb-2">Comments</h4>
                                 <div className="max-h-32 overflow-y-auto border p-2 rounded scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200">
                                     {comments.map((comment, index) => (
-                                        <p key={index} className="bg-white border p-2 rounded mb-1 text-black">{comment}</p>
+                                        <div key={index} className="flex justify-between items-center bg-white border p-2 rounded mb-1 text-black">
+                                            {editCommentIndex === index ? (
+                                                <input
+                                                    type="text"
+                                                    className="w-full p-1 border rounded text-black"
+                                                    value={editCommentText}
+                                                    onChange={(e) => setEditCommentText(e.target.value)}
+                                                />
+                                            ) : (
+                                                <p>{comment}</p>
+                                            )}
+                                            <div className="flex space-x-2">
+                                                {editCommentIndex === index ? (
+                                                    <button onClick={() => saveEditedComment(index)} className="text-black ml-1"><Edit2 size={16}/></button>
+                                                ) : (
+                                                    <button onClick={() => startEditingComment(index, comment)} className="text-black"><Edit2 size={16}/></button>
+                                                )}
+                                                <button onClick={() => deleteComment(index)} className="text-black  "><Trash2 size={16}/></button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                                <input type="text" placeholder="Add a comment..." className="w-full p-2 border rounded mt-2 text-black" value={newComment} onChange={(e) => setNewComment(e.target.value)} />
+
+                                <input
+                                    type="text"
+                                    placeholder="Add a comment..."
+                                    className="w-full p-2 border rounded mt-2 text-black"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                />
                                 <button onClick={addComment} className="mt-2 px-4 py-2 bg-green-500 text-white rounded">Add Comment</button>
                             </div>
+
 
                             <div className="flex justify-end mt-4">
                                 <button onClick={closePopup} className="mr-2 px-4 py-2 bg-gray-400 rounded">Close</button>

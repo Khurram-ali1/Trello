@@ -6,7 +6,7 @@ import { BoardContext } from '../context/BoardContext';
 function Sidebar() {
     const blankBoard = {
         name: '',
-        bgcolor: '#f60000',
+        bgcolor: '',
         list: []
     }
     const [boardData, setBoardData] = useState(blankBoard)
@@ -27,17 +27,21 @@ function Sidebar() {
     }
 
     return (
-        <div className={`bg-[#464847] h-screen border-r border-r-[#9fadbc29] transition-all linear duration-500 flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}>
+        
+<div 
+    className={`backdrop-blur-sm h-screen border-r border-r-[#9fadbc29] transition-all linear duration-500 flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
+    style={{ backgroundColor: allboard.active !== null ? allboard.boards[allboard.active].bgcolor + "cc" : "#5d5b5fcc" }} 
+>
             <div className="flex flex-col h-full">
                 {collapsed && <div className='p-2'>
-                    <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-slate-600 rounded-sm'>
+                    <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-[#9D00FD] rounded-sm'>
                         <ChevronRight size={18}></ChevronRight>
                     </button>
                 </div>}
                 {!collapsed && <div>
                     <div className="workspace p-3 flex justify-between border-b border-b-[#9fadbc29]">
                         <h4>Remote Dev's Workspace</h4>
-                        <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-slate-600 rounded-sm p-1'>
+                        <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-[#9D00FD] rounded-sm p-1'>
                             <ChevronLeft size={18}></ChevronLeft>
                         </button>
                     </div>
@@ -64,14 +68,14 @@ function Sidebar() {
                                     </div>
                                 }
                             >
-                                <button onClick={() => setShowPop(!showpop)} className='hover:bg-slate-600 rounded-sm p-1'><Plus size={16}></Plus></button>
+                                <button onClick={() => setShowPop(!showpop)} className='hover:bg-[#9D00FD] rounded-sm p-1'><Plus size={16}></Plus></button>
                             </Popover>
                         </div>
                     </div>
                     <ul>
                         {allboard.boards && allboard.boards.map((x, i) => {
                             return <li key={i}>
-                                <button onClick={() => setActiveBoard(i)} className='px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-gray-500'>
+                                <button onClick={() => setActiveBoard(i)} className='px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-[#9D00FD]'>
                                     <span className='w-6 h-max rounded-sm mr-2' style={{ backgroundColor: `${x.bgcolor}` }}>&nbsp;</span>
                                     <span>{x.name}</span>
                                 </button>

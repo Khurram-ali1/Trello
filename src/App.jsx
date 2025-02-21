@@ -25,13 +25,15 @@ function App() {
 
   return (
     <>
-    <Header></Header>
+    
     <BoardContext.Provider value={{allboard,setAllBoard}}> 
+    <Header></Header>
     <div className='content flex'>
       <Sidebar></Sidebar>
       <Main></Main>
     </div>
     </BoardContext.Provider>
+    
     </>
   )
 }

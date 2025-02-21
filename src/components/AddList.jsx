@@ -27,7 +27,7 @@ function AddList(props) {
             <button onClick={()=> closeBtn()} className='p-1 rounded hover:bg-gray-500'><X size={16}></X></button>
             </div>
         </div>}
-      {!show &&  <button onClick={()=> setShow(!show)} className=' flex p-1 w-full justify-center rounded items-center mt-1 hover:bg-gray-500 h-8 '><Plus size={16}></Plus>Add a list
+      {!show &&  <button onClick={()=> setShow(!show)} className=' flex p-1 w-full justify-center rounded items-center mt-1 hover:bg-gray-300 h-8 '><Plus size={16}></Plus>Add a list
         </button>}
     </div>
   )
