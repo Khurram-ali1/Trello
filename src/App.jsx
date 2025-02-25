@@ -1,38 +1,21 @@
 import React, { useState } from 'react'
 import './App.css'
-import Header from './components/Header'
-import Sidebar from './components/Sidebar'
-import Main from './components/Main'
-import { BoardContext } from './context/BoardContext'
-
+import TrelloApp from './components/TrelloApp'
+import Login from './components/Login'
+import { BrowserRouter as Router , Route ,Routes } from 'react-router-dom'
 
 function App() {
-  const boardData= {
-    active:0,
-    boards:[
-      {
-        name: "My Trello Board",
-        bgcolor:"",
-        lists:[
-          {id:"1", title:"To do",items:[{id:"cdrFt", title:"Project Description 1"}]},
-          {id:"2", title:"In Progress",items:[{id:"cdfdr", title:"Project Description 2"}]},
-          {id:"3", title:"Completed",items:[{id:"cdfer", title:"Project Description 3"}]},
-        ]
-      }
-    ]
-  }
-  const [allboard , setAllBoard] = useState(boardData)
+  
 
   return (
     <>
+    <Router>
+      <Routes>
+        <Route path="/trello" element={<TrelloApp/>}/>
+        <Route path="/" element={<Login/>}/>
+      </Routes>
+    </Router>
     
-    <BoardContext.Provider value={{allboard,setAllBoard}}> 
-    <Header></Header>
-    <div className='content flex'>
-      <Sidebar></Sidebar>
-      <Main></Main>
-    </div>
-    </BoardContext.Provider>
     
     </>
   )

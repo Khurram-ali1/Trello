@@ -49,7 +49,7 @@ style={{
             <div className="flex flex-col h-full">
                 {collapsed && (
                     <div className='p-2'>
-                        <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-[#9D00FD] rounded-sm'>
+                        <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-gray-500 rounded-sm'>
                             <ChevronRight size={18} />
                         </button>
                     </div>
@@ -58,7 +58,7 @@ style={{
                     <div>
                         <div className="workspace p-3 flex justify-between border-b border-b-[#9fadbc29]">
                             <h4>Remote Dev's Workspace</h4>
-                            <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-[#9D00FD] rounded-sm p-1'>
+                            <button onClick={() => setCollapsed(!collapsed)} className='hover:bg-gray-500 rounded-sm p-1'>
                                 <ChevronLeft size={18} />
                             </button>
                         </div>
@@ -70,8 +70,8 @@ style={{
                                     align='start'
                                     positions={['right', 'top', 'bottom', 'left']}
                                     content={
-                                        <div className='ml-2 p-2 w-60 flex flex-col justify-center items-center bg-slate-500 text-white rounded'>
-                                            <button onClick={() => setShowPop(!showpop)} className='absolute right-2 top-2 hover:bg-gray-500 p-1 rounded'>
+                                        <div className='ml-2 p-2 w-60 flex flex-col justify-center items-center bg-[#f1f2f4] text-black rounded'>
+                                            <button onClick={() => setShowPop(!showpop)} className='absolute right-2 top-2 hover:text-white hover:bg-gray-500 p-1 rounded'>
                                                 <X size={16} />
                                             </button>
                                             <h4 className='py-3'>Create Board</h4>
@@ -82,7 +82,7 @@ style={{
                                                     value={boardData.name}
                                                     onChange={(e) => setBoardData({ ...boardData, name: e.target.value })}
                                                     type="text"
-                                                    className='mb-2 h-8 w-full px-2 bg-gray-700'
+                                                    className='mb-2 h-8 w-full px-2 bg-white text-black outline-none'
                                                     placeholder="Enter board title"
                                                     required
                                                 />
@@ -92,16 +92,16 @@ style={{
                                                     value={boardData.bgcolor}
                                                     onChange={(e) => setBoardData({ ...boardData, bgcolor: e.target.value })}
                                                     type="color"
-                                                    className='mb-2 h-8 w-full px-2 bg-gray-700'
+                                                    className='mb-2 h-8 w-full px-2 bg-white'
                                                 />
-                                                <button onClick={addBoard} className='w-full h-8 rounded bg-slate-700 mt-2 hover:bg-gray-500'>
+                                                <button onClick={addBoard} className='w-full h-8 rounded bg-[#464847c4] text-white mt-2 hover:bg-gray-500'>
                                                     Create
                                                 </button>
                                             </div>
                                         </div>
                                     }
                                 >
-                                    <button onClick={() => setShowPop(!showpop)} className='hover:bg-[#9D00FD] rounded-sm p-1'>
+                                    <button onClick={() => setShowPop(!showpop)} className='hover:bg-gray-500 rounded-sm p-1'>
                                         <Plus size={16} />
                                     </button>
                                 </Popover>
@@ -112,7 +112,7 @@ style={{
         <li key={i}>
             <button
                 onClick={() => setActiveBoard(i)}
-                className="px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-gray-700"
+                className="px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-gray-500"
             >
                 <span className='w-6 h-max rounded-sm mr-2' style={{ backgroundColor: `${x.bgcolor}` }}>&nbsp;</span>
                 <span>{x.name}</span>
