@@ -39,12 +39,12 @@ function Sidebar() {
 
     return (
         <div
-            className={`backdrop-blur-sm h-screen bg-[#464847b9] transition-all linear duration-500 flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
-style={{ 
-    backgroundColor: allboard.active === 0 
-        ? "#464847c4"  // Transparent when "My Trello Board" is active
-        : allboard.boards?.[allboard.active]?.bgcolor + "cc" || "#5d5b5fcc" 
-}}
+            className={`backdrop-blur-sm h-screen bg-[#464847b9] transition-all linear duration-500 overflow-y-auto  flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
+            style={{
+                backgroundColor: allboard.active === 0
+                    ? "#464847c4"  
+                    : allboard.boards?.[allboard.active]?.bgcolor + "cc" || "#5d5b5fcc"
+            }}
         >
             <div className="flex flex-col h-full">
                 {collapsed && (
@@ -108,18 +108,18 @@ style={{
                             </div>
                         </div>
                         <ul>
-    {allboard.boards.map((x, i) => (
-        <li key={i}>
-            <button
-                onClick={() => setActiveBoard(i)}
-                className="px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-gray-500"
-            >
-                <span className='w-6 h-max rounded-sm mr-2' style={{ backgroundColor: `${x.bgcolor}` }}>&nbsp;</span>
-                <span>{x.name}</span>
-            </button>
-        </li>
-    ))}
-</ul>
+                            {allboard.boards.map((x, i) => (
+                                <li key={i}>
+                                    <button
+                                        onClick={() => setActiveBoard(i)}
+                                        className="px-3 py-2 w-full text-sm flex justify-start align-baseline hover:bg-gray-500"
+                                    >
+                                        <span className='w-6 h-max rounded-sm mr-2' style={{ backgroundColor: `${x.bgcolor}` }}>&nbsp;</span>
+                                        <span>{x.name}</span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
 
                     </div>
                 )}

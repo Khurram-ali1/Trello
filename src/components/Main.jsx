@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddList from './AddList';
 import Utils from '../utils/Utils';
 
+
 function Main() {
     const { allboard, setAllBoard } = useContext(BoardContext);
     const bdata = allboard.boards[allboard.active];
@@ -196,7 +197,7 @@ function Main() {
     const members = [
         { id: 1, name: "Michael Scott", initials: "MS", color: "bg-purple-600" },
         { id: 2, name: "Sara Brown", initials: "SB", color: "bg-cyan-600" },
-        { id: 2, name: "Akash Surya", initials: "AS", color: "bg-green-600" }
+        { id: 3, name: "Akash Surya", initials: "AS", color: "bg-green-600" }
     ];
 
     return (
@@ -227,7 +228,7 @@ function Main() {
             </div>
 
 
-            <div className='h-screen overflow-x-auto' style={{ width: '100vw' }}>
+            <div className='h-screen overflow-x-auto' style={{ minwidth: '87vw' , maxWidth: '100vw' }}>
                 <div className='flex-grow flex overflow-x-auto p-3' style={{ whiteSpace: 'nowrap', minWidth: '80%' }}>
                     <div className="min-w-full h-full overflow-x-auto">
                         <div className='flex flex-row space-x-4 px-3 items-start pb-2' style={{ minWidth: 'fit-content', display: 'flex' }}>
@@ -315,6 +316,12 @@ function Main() {
                     <div className="fixed inset-0 flex items-center justify-center bg-[#000000d8]">
                         <div className="bg-[#f1f2f4] p-6 rounded-lg w-[700px] mb-2 max-h-[85vh] overflow-y-auto relative">
 
+                            <button
+                                onClick={closePopup}
+                                className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-lg font-bold"
+                            >
+                                <X size={24} className='mt-2' />
+                            </button>
                             {editImage && (
                                 <div className="w-full h-48 flex justify-center">
                                     <img
