@@ -136,7 +136,6 @@ const Login = () => {
             </button>
           </form>
 
-          
           <div className="text-center mt-4">
             <button
               className="text-blue-600 text-sm cursor-pointer"
@@ -150,7 +149,7 @@ const Login = () => {
           </div>
         </div>
 
-        
+        {/* Right - Image */}
         <div className="hidden md:flex w-1/2 items-center justify-center bg-gray-50 p-4">
           <img src={LoginImg} alt="Login Illustration" className="w-[80%] h-auto object-contain" />
         </div>

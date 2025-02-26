@@ -2,15 +2,36 @@ import React, { useState } from "react";
 import Logo from "../assets/bmybrand_logo.png";
 import Profile from "../assets/profile.png";
 import { Search } from "react-feather";
+import "../../src/App.css";
 
 function Header() {
   const [searchText, setSearchText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const suggestions = ["My Trello Board", "Web Development", " Web Designing", ];
 
-  // Filtered suggestions based on input
+  // Search Data with Titles and Categories
+  const suggestions = [
+    { name: "My Trello Board", category: "Project Management" },
+    { name: "Web Development", category: "Software Engineering" },
+    { name: "Web Designing", category: "UI/UX Design" },
+    { name: "React JS", category: "Frontend Development" },
+    { name: "Node JS", category: "Backend Development" },
+    { name: "Express JS", category: "Backend Development" },
+    { name: "MongoDB", category: "Database Management" },
+    { name: "MySQL", category: "Database Management" },
+    { name: "PostgreSQL", category: "Database Management" },
+    { name: "Firebase", category: "Cloud Services" },
+    { name: "AWS", category: "Cloud Services" },
+    { name: "Heroku", category: "Cloud Deployment" },
+    { name: "Trello", category: "Task Management" },
+    { name: "Asana", category: "Task Management" },
+    { name: "Jira", category: "Agile Development" },
+    { name: "Monday.com", category: "Productivity Tools" },
+    { name: "Notion", category: "Productivity Tools" },
+  ];
+
+  // Filtered suggestions based on search input
   const filteredSuggestions = suggestions.filter((item) =>
-    item.toLowerCase().includes(searchText.toLowerCase())
+    item.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -40,21 +61,29 @@ function Header() {
 
             {/* Suggestions Dropdown */}
             {isFocused && filteredSuggestions.length > 0 && (
-              <div className="absolute top-full mt-2 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg p-2">
+              <div className="absolute top-full mt-2 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg p-2 z-50 max-h-[50vh] overflow-y-auto custom-scrollbar">
+                <div className="p-2 font-semibold text-xs text-gray-600 border-b border-gray-300">
+                  SEARCH RESULTS
+                </div>
                 {filteredSuggestions.map((suggestion, index) => (
                   <div
                     key={index}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onMouseDown={() => setSearchText(suggestion)} // Select suggestion on click
+                    className="p-1 hover:bg-gray-100 cursor-pointer"
+                    onMouseDown={() => setSearchText(suggestion.name)} // Select on click
                   >
-                    {suggestion}
+                    <div className="text-[18px] font-medium text-gray-800">
+                      {suggestion.name}
+                    </div>
+                    <div className="text-[12px] text-gray-500">
+                      {suggestion.category}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <span>Remote Dev</span>
+          <span>Khurram Ali</span>
 
           <div className="w-10 h-10 rounded-full border-2 border-purple-500 shadow-md overflow-hidden">
             <img className="w-full h-full object-cover" src={Profile} alt="Profile Logo" />

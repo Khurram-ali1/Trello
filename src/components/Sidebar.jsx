@@ -25,8 +25,6 @@ function Sidebar() {
         }));
     };
 
-
-
     const addBoard = () => {
         setAllBoard(prev => ({
             ...prev,
@@ -36,13 +34,12 @@ function Sidebar() {
         setShowPop(false);
     };
 
-
     return (
         <div
-            className={`backdrop-blur-sm h-screen bg-[#464847b9] transition-all linear duration-500 overflow-y-auto  flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
+            className={`backdrop-blur-sm h-screen bg-[#464847b9] transition-all linear duration-500 overflow-y-auto flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
             style={{
                 backgroundColor: allboard.active === 0
-                    ? "#464847c4"  
+                    ? "#464847c4"
                     : allboard.boards?.[allboard.active]?.bgcolor + "cc" || "#5d5b5fcc"
             }}
         >
@@ -120,7 +117,6 @@ function Sidebar() {
                                 </li>
                             ))}
                         </ul>
-
                     </div>
                 )}
             </div>
