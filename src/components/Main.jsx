@@ -5,6 +5,7 @@ import { BoardContext } from '../context/BoardContext';
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddList from './AddList';
 import Utils from '../utils/Utils';
+import '../../src/App.css';
 
 
 function Main() {
@@ -228,13 +229,13 @@ function Main() {
             </div>
 
 
-            <div className='h-screen overflow-x-auto' style={{ minwidth: '87vw' , maxWidth: '100vw' }}>
+            <div className='h-screen overflow-x-auto ' style={{ minwidth: '87vw' , maxWidth: '100vw' }}>
                 <div className='flex-grow flex overflow-x-auto p-3' style={{ whiteSpace: 'nowrap', minWidth: '80%' }}>
-                    <div className="min-w-full h-full overflow-x-auto">
+                    <div className="min-w-full h-full overflow-x-auto custom-scrollbar">
                         <div className='flex flex-row space-x-4 px-3 items-start pb-2' style={{ minWidth: 'fit-content', display: 'flex' }}>
                             <DragDropContext onDragEnd={onDragEnd}>
                                 {bdata.lists && bdata.lists.map((x, listIndex) => (
-                                    <div key={x.id} className='w-[280px] rounded-md p-2 text-black bg-[#f1f2f4] flex flex-col overflow-y-auto  overflow-x-hidden whitespace-normal '>
+                                    <div key={x.id} className='w-[280px] rounded-md p-2 text-black bg-[#f1f2f4] flex flex-col overflow-y-auto   overflow-x-hidden whitespace-normal '>
                                         <div className='flex justify-between p-1 relative'>
                                             {editingListIndex === listIndex ? (
                                                 <input
@@ -272,7 +273,7 @@ function Main() {
                                                 <div
                                                     ref={provided.innerRef}
                                                     {...provided.droppableProps}
-                                                    className='flex flex-col space-y-2 transition-all'
+                                                    className='flex flex-col space-y-2 transition-all custom-scrollbar'
                                                     style={{ minHeight: "50px", maxHeight: "80vh", overflowY: "auto" }}
                                                 >
 
