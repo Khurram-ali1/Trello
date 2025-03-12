@@ -62,8 +62,8 @@ function Header() {
             {/* Suggestions Dropdown */}
             {isFocused && filteredSuggestions.length > 0 && (
               <div className="absolute top-full mt-2 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg p-2 z-50 max-h-[50vh] overflow-y-auto custom-scrollbar">
-                <div className="p-2 font-semibold text-xs text-gray-600 border-b border-gray-300">
-                  SEARCH RESULTS
+                <div className="p-2 font-semibold text-[11px] text-gray-600 border-b border-gray-300">
+                  RECENT BOARDS
                 </div>
                 {filteredSuggestions.map((suggestion, index) => (
                   <div

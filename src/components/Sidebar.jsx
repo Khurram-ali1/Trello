@@ -36,7 +36,7 @@ function Sidebar() {
 
     return (
         <div
-            className={`backdrop-blur-sm h-screen bg-[#464847b9] transition-all linear duration-500 overflow-y-auto flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
+            className={`backdrop-blur-sm h-[96vh] bg-[#464847b9] transition-all linear duration-500 overflow-y-auto custom-scrollbar flex-shrink-0 ${collapsed ? 'w-[40px]' : 'w-[280px]'}`}
             style={{
                 backgroundColor: allboard.active === 0
                     ? "#464847c4"

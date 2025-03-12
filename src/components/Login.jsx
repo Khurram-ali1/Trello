@@ -21,7 +21,6 @@ const Login = () => {
     }
 
     if (forgotPassword && !resetStep) {
-      console.log("Reset password request for:", email);
       alert("A password reset link has been sent to your email!");
       setResetStep(true);
       return;
@@ -37,7 +36,6 @@ const Login = () => {
         return;
       }
 
-      console.log("Password updated for:", email);
       alert("Your password has been updated successfully!");
       setForgotPassword(false);
       setResetStep(false);
@@ -53,14 +51,14 @@ const Login = () => {
     }
 
     setError("");
-    console.log("Logging in with:", { email, password });
     navigate("/trello");
   };
 
   return (
+    <>
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
       <div className="flex w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden">
-        
+
         {/* Left - Login Form */}
         <div className="w-full md:w-1/2 p-10">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -153,9 +151,23 @@ const Login = () => {
         <div className="hidden md:flex w-1/2 items-center justify-center bg-gray-50 p-4">
           <img src={LoginImg} alt="Login Illustration" className="w-[80%] h-auto object-contain" />
         </div>
-
       </div>
     </div>
+    {/* Embed Chatbot Directly */}
+    <iframe
+  src="https://chatapp-khurram.netlify.app/"
+  style={{
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    height: "700px",
+    width: "500px",
+    zIndex: 1000, 
+  }}
+></iframe>
+
+
+    </>
   );
 };
 

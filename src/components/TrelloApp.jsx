@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Main from '../components/Main';
 import { BoardContext } from '../context/BoardContext';
+import Footer from '../components/Footer';
 
 const TrelloApp = () => {
   const initialBoardData = {
@@ -24,13 +25,17 @@ const TrelloApp = () => {
   const [allboard, setAllBoard] = useState(initialBoardData);
 
   return (
+   <>
     <BoardContext.Provider value={{ allboard, setAllBoard }}>
       <Header />
       <div className='content flex'>
         <Sidebar />
         <Main />
       </div>
+      <Footer/>
     </BoardContext.Provider>
+   
+    </>
   );
 };
 
