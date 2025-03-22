@@ -4,7 +4,6 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Main from '../components/Main';
 import { BoardContext } from '../context/BoardContext';
-import Footer from '../components/Footer';
 
 const TrelloApp = () => {
   const initialBoardData = {
@@ -32,7 +31,7 @@ const TrelloApp = () => {
         <Sidebar />
         <Main />
       </div>
-      <Footer/>
+      
     </BoardContext.Provider>
    
     </>

@@ -1,19 +1,20 @@
-import React from 'react';
-import './App.css';
-import TrelloApp from './components/TrelloApp';
-import Login from './components/Login';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./components/Login";
+import Trello from "./components/TrelloApp";
+import Dashboard from "./components/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/trello" element={<TrelloApp />} />
-          <Route path="/" element={<Login />} />
-        </Routes>
-      </Router>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/trello" element={<Trello />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
