@@ -27,7 +27,7 @@ const WorkspaceModal = ({ onClose }) => {
         {/* Cross Icon */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-2 right-2 hover:text-white hover:bg-gray-500 rounded-sm p-1 cursor-pointer"
         >
           <X size={20} />
         </button>
@@ -58,8 +58,8 @@ const WorkspaceModal = ({ onClose }) => {
             >
               <option value="">Choose...</option>
               <option value="Marketing">Marketing</option>
-              <option value="Engineering">Development</option>
-              <option value="Design">Design</option>
+              <option value="Engineering">Website Development</option>
+              <option value="Design">Website Design</option>
             </select>
           </div>
           <div className="mb-4">
@@ -80,13 +80,13 @@ const WorkspaceModal = ({ onClose }) => {
             <button
               type="button"
               onClick={onClose} // Close the modal when Cancel is clicked
-              className="mr-2 px-4 py-2 bg-gray-500 text-white rounded"
+              className="mr-2 px-4 py-2 bg-gray-500 text-white rounded cursor-pointer hover:bg-gray-600"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded"
+              className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600"
             >
               Continue
             </button>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus } from 'react-feather';
 
-function CardAdd(props) {
+function CardAdd({ listId, getcard }) {
   const [card, setCard] = useState('');
   const [show, setShow] = useState(false);
 
@@ -9,7 +9,8 @@ function CardAdd(props) {
     if (!card) {
       return;
     }
-    props.getcard(card);
+    console.log("Adding card to list ID:", listId);
+    getcard(card);
     setCard('');
     setShow(false);
   };
