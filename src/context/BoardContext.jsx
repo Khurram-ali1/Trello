@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 
 export const BoardContext = createContext({
   allboard: {
@@ -12,155 +12,148 @@ export const BoardContext = createContext({
   createCard: () => Promise.resolve({ success: false }),
   setActiveBoard: () => {},
   updateListTitle: () => Promise.resolve({ success: false }),
+  fetchCardsForList: () => Promise.resolve({ success: false }),
 });
+
+// Helper functions
+const getAuthToken = () => localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+
+const handleApiError = (error) => {
+  if (error.name === 'AbortError') {
+    console.log('Request aborted');
+    return { success: false, aborted: true };
+  }
+  console.error('API Error:', error);
+  return { success: false, error: error.message };
+};
+
+const fetchApi = async (endpoint, options = {}) => {
+  try {
+    const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    if (!token) throw new Error("No authentication token found");
+    
+    const response = await fetch(`https://trello.testserverwebsite.com${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...options.headers,
+      },
+    });
+
+    const data = await response.json();
+    console.log("API Response:", { endpoint, status: response.status, data });
+
+    if (!response.ok) {
+      // Include server validation errors if available
+      const errorMsg = data.message || 
+                      (data.errors ? JSON.stringify(data.errors) : `HTTP ${response.status}`);
+      throw new Error(errorMsg);
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("API Error Details:", {
+      endpoint,
+      error: error.message,
+      stack: error.stack
+    });
+    return { success: false, error: error.message };
+  }
+};
 
 export const BoardProvider = ({ children }) => {
   const [allboard, setAllBoard] = useState(() => {
     const saved = localStorage.getItem('boardState');
-    return saved ? JSON.parse(saved) : {
-      boards: [],
-      active: null,
-    };
+    return saved ? JSON.parse(saved) : { boards: [], active: null };
   });
 
-  // Fetch boards on initial load
+  // Debounced localStorage saving
   useEffect(() => {
-    fetchBoards();
-  }, []);
-
-  // Persist state to localStorage
-  useEffect(() => {
-    localStorage.setItem('boardState', JSON.stringify(allboard));
+    const timer = setTimeout(() => {
+      localStorage.setItem('boardState', JSON.stringify(allboard));
+    }, 500);
+    return () => clearTimeout(timer);
   }, [allboard]);
 
-  const fetchBoards = async () => {
-    try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-      console.log("Token:", token); // Debugging token
-  
-      const response = await fetch("https://trello.testserverwebsite.com/api/boards", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      if (!response.ok) throw new Error("Failed to fetch boards");
-  
-      const responseData = await response.json();
-      console.log("Full API Response:", responseData); // Debug entire response
-  
-      if (responseData?.data && Array.isArray(responseData.data)) {
-        console.log("Boards Array:", responseData.data); // Debug boards array
-        setAllBoard((prev) => ({
-          ...prev,
-          boards: responseData.data.map((board) => ({
-            id: board.id,
-            name: board.name,
-            bgcolor: "#5d5b5f", // Default color since it's missing in the response
-            lists: [], // Empty lists for now as they're not in the response
-          })),
-          active: prev.active || responseData.data?.[0]?.id || null,
-        }));
-      } else {
-        console.error("Unexpected API response structure:", responseData);
-        setAllBoard((prev) => ({
-          ...prev,
-          boards: [],
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching boards:", error.message);
-    }
-  };
-  
-  
+  const fetchBoards = useCallback(async () => {
+    const result = await fetchApi('/api/boards');
+    if (!result.success) return result;
 
-  const fetchListsForBoard = async (boardId, signal) => {
-    try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-      const response = await fetch(`https://trello.testserverwebsite.com/api/lists/${boardId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        signal
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch lists");
-      }
-  
-      const data = await response.json();
-      
-      // Handle both cases - empty array or actual lists
-      if (data.status === 1) {
-        setAllBoard(prev => ({
-          ...prev,
-          boards: prev.boards.map(board => 
-            board.id === boardId
-              ? {
-                  ...board,
-                  lists: Array.isArray(data.data) ? data.data.map(list => ({
+    const boardsData = result.data?.data || [];
+    setAllBoard(prev => ({
+      ...prev,
+      boards: boardsData.map(board => ({
+        id: board.id,
+        name: board.name,
+        bgcolor: board.bgcolor || "#5d5b5f",
+        lists: prev.boards.find(b => b.id === board.id)?.lists || [],
+      })),
+      active: prev.active || boardsData[0]?.id || null,
+    }));
+
+    return { success: true };
+  }, []);
+
+  const fetchListsForBoard = useCallback(async (boardId, signal) => {
+    const result = await fetchApi(`/api/lists/${boardId}`, { signal });
+    if (!result.success) return result;
+
+    setAllBoard(prev => ({
+      ...prev,
+      boards: prev.boards.map(board => 
+        board.id === boardId
+          ? {
+              ...board,
+              lists: Array.isArray(result.data.data) 
+                ? result.data.data.map(list => ({
                     id: list.id,
                     title: list.title,
                     position: list.position,
-                    items: []
-                  })) : []
-                }
-              : board
-          )
-        }));
-        return { success: true };
-      }
-      
-      return { success: false, error: data.message || "Unknown error" };
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error("Fetch error:", error.message);
-        // Return success even if no lists found, but with empty array
-        setAllBoard(prev => ({
-          ...prev,
-          boards: prev.boards.map(board => 
-            board.id === boardId
-              ? { ...board, lists: [] }
-              : board
-          )
-        }));
-      }
-      return { success: true }; // Treat as success with empty lists
-    }
-  };
+                    items: board.lists.find(l => l.id === list.id)?.items || [],
+                  }))
+                : []
+            }
+          : board
+      )
+    }));
+
+    return { success: true };
+  }, []);
 
   const createList = async (boardId, title) => {
     try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-      
-      const response = await fetch("https://trello.testserverwebsite.com/api/lists", {
+      // Calculate position based on existing lists
+      const board = allboard.boards.find(b => b.id === boardId);
+      const position = board?.lists?.length > 0 
+        ? board.lists[board.lists.length - 1].position + 1000
+        : 1000;
+  
+      const result = await fetchApi('/api/lists', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({
           board_id: boardId,
-          title: title,
-          position: allboard.boards.find(b => b.id === boardId)?.lists?.length || 0
+          title: title.trim(),
+          position: position
         })
       });
   
-      const data = await response.json();
-  
-      if (data.status === 1) {
-        return { 
-          success: true, 
-          data: {
-            id: data.data.id, // Use server-generated numeric ID
-            title: data.data.title,
-            items: []
-          }
-        };
+      if (!result.success) {
+        console.error("List creation failed:", result.error);
+        return { success: false, error: result.error };
       }
-      return { success: false, error: data.message };
+  
+      return { 
+        success: true,
+        data: {
+          id: result.data.data.id,
+          title: result.data.data.title,
+          position: result.data.data.position,
+          items: []
+        }
+      };
     } catch (error) {
+      console.error("Error in createList:", error);
       return { success: false, error: error.message };
     }
   };
@@ -168,116 +161,145 @@ export const BoardProvider = ({ children }) => {
   const createCard = async (listId, title, position) => {
     try {
       const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-      console.log("Creating card with:", { listId, title, position }); // Debugging
-
+      if (!token) throw new Error("No authentication token found");
+      
+      const payload = {
+        list_id: listId,
+        title: title,
+        position: position,
+        // Add any other required fields your API expects
+      };
+  
+      console.log("Sending card creation payload:", payload);
+  
       const response = await fetch("https://trello.testserverwebsite.com/api/cards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          list_id: listId,
-          title: title,
-          position: position,
-        }),
+        body: JSON.stringify(payload),
       });
-
+  
       const data = await response.json();
-      console.log("Backend response:", data); // Debugging
-
-      if (data.status === 1) {
-        console.log("Card created successfully:", data.data);
-        return {
-          success: true,
-          data: {
-            id: data.data.id,
-            title: data.data.title,
-            position: data.data.position,
-          },
-        };
+      console.log("API response:", data);
+  
+      if (!response.ok) {
+        // Include more detailed error info from server if available
+        throw new Error(data.message || data.error || `HTTP ${response.status} - Failed to create card`);
       }
-      return { success: false, error: data.message };
+  
+      if (!data.data) {
+        throw new Error("Invalid response format from server");
+      }
+  
+      return {
+        success: true,
+        data: {
+          id: data.data.id,
+          title: data.data.title,
+          position: data.data.position,
+        },
+      };
     } catch (error) {
-      console.error("Error creating card:", error.message); // Debugging
-      return { success: false, error: error.message };
+      console.error("Detailed error creating card:", {
+        error: error.message,
+        stack: error.stack,
+      });
+      return { 
+        success: false, 
+        error: error.message,
+        fullError: error // Include full error object for debugging
+      };
     }
   };
 
-  const setActiveBoard = (boardId) => {
-    setAllBoard((prev) => ({
-      ...prev,
-      active: boardId,
-      boards: prev.boards.map((board) => ({
-        ...board,
-        isActive: board.id === boardId,
-      })),
-    }));
-  };
-
-  const updateListTitle = async (listId, newTitle) => {
+  const updateCardTitle = async (cardId, newTitle) => {
     try {
       const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+      if (!token) throw new Error("No authentication token found");
   
-      if (typeof listId !== "number") {
-        throw new Error("Invalid list ID format");
-      }
-  
+      // Encode the title for URL safety
       const encodedTitle = encodeURIComponent(newTitle);
-      const url = `https://trello.testserverwebsite.com/api/lists/${listId}?name=${encodedTitle}`;
-      console.log("PUT request URL:", url); // Debugging
+      const url = `https://trello.testserverwebsite.com/api/cards/${cardId}?title=${encodedTitle}`;
   
       const response = await fetch(url, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
   
       const data = await response.json();
-      console.log("Backend response data:", data); // Debugging
-  
-      if (!response.ok || data.status !== 1) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Failed to update card title. Status: ${response.status}`);
       }
   
-      if (data.data.id !== listId) {
-        throw new Error("Server returned mismatched list ID");
-      }
-  
-      return { success: true, data: data.data };
-  
+      return { 
+        success: true,
+        data: {
+          id: data.data.id,
+          title: data.data.title,
+          // Include other fields you might need
+        }
+      };
     } catch (error) {
-      console.error("Error in updateListTitle:", error.message); // Debugging
-      return { success: false, error: error.message, isInvalidId: error.message.includes("Invalid list ID") };
-    }
-  };
-  const fetchCardsForList = async (listId) => {
-    try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-      const response = await fetch(`https://trello.testserverwebsite.com/api/cards/${listId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.status !== 1) {
-        throw new Error(data.message || `Failed to fetch cards. Status code: ${response.status}`);
-      }
-
-      return { success: true, data: data.data };
-    } catch (error) {
-      console.error("Error fetching cards:", error.message);
+      console.error("Error updating card title:", error);
       return { success: false, error: error.message };
     }
   };
+  
 
+  const setActiveBoard = useCallback((boardId) => {
+    setAllBoard(prev => ({
+      ...prev,
+      active: boardId
+    }));
+  }, []);
 
+  const updateListTitle = useCallback(async (listId, newTitle) => {
+    const encodedTitle = encodeURIComponent(newTitle);
+    const result = await fetchApi(`/api/lists/${listId}?name=${encodedTitle}`, {
+      method: 'PUT'
+    });
+
+    if (result.success) {
+      setAllBoard(prev => ({
+        ...prev,
+        boards: prev.boards.map(board => ({
+          ...board,
+          lists: board.lists.map(list => 
+            list.id === listId
+              ? { ...list, title: newTitle }
+              : list
+          )
+        }))
+      }));
+    }
+
+    return result;
+  }, []);
+
+  const fetchCardsForList = useCallback(async (listId) => {
+    const result = await fetchApi(`/api/cards/${listId}`);
+    if (!result.success) return result;
+
+    setAllBoard(prev => ({
+      ...prev,
+      boards: prev.boards.map(board => ({
+        ...board,
+        lists: board.lists.map(list => 
+          list.id === listId
+            ? { ...list, items: result.data.data || [] }
+            : list
+        )
+      }))
+    }));
+
+    return { success: true };
+  }, []);
 
   return (
     <BoardContext.Provider
@@ -290,7 +312,8 @@ export const BoardProvider = ({ children }) => {
         createCard,
         setActiveBoard,
         updateListTitle,
-        fetchCardsForList
+        fetchCardsForList,
+        updateCardTitle,
       }}
     >
       {children}

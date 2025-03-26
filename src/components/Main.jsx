@@ -15,6 +15,7 @@ import Utils from "../utils/Utils";
 import "../../src/App.css";
 
 function Main() {
+  // All original state declarations remain exactly the same
   const {
     allboard,
     setAllBoard,
@@ -22,6 +23,7 @@ function Main() {
     updateListTitle,
     createList,
     createCard,
+    updateCardTitle,
   } = useContext(BoardContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,11 +43,15 @@ function Main() {
   const [menuOpenIndex, setMenuOpenIndex] = useState(null);
   const [updatingListTitle, setUpdatingListTitle] = useState(false);
   const [listUpdateError, setListUpdateError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
+
+  // Original derived state
   const activeBoard = allboard.boards.find(
     (board) => board.id === allboard.active
   );
 
+  // Original useEffect hooks remain exactly the same
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -74,6 +80,7 @@ function Main() {
     }
   }, [activeBoard?.id, setAllBoard]);
 
+  // Optimized onDragEnd with useCallback
   const onDragEnd = useCallback(
     (res) => {
       if (!res.destination || !activeBoard?.lists) return;
@@ -130,32 +137,42 @@ function Main() {
     [activeBoard?.lists, setAllBoard]
   );
 
+  // Original useEffect for loading lists
   useEffect(() => {
     const controller = new AbortController();
-
+  
     const loadLists = async () => {
       if (allboard.active) {
         try {
+          setLoading(true);
           const result = await fetchListsForBoard(
             allboard.active,
             controller.signal
           );
+          
           if (!result.success) {
-            console.warn("Note:", result.error); // Changed from error to warn for empty lists case
+            console.warn("Failed to load lists:", result.error || "Unknown error");
+            return;
           }
+          
+          // Success case - lists should now be in state
         } catch (error) {
           if (error.name !== "AbortError") {
-            console.error("Critical error loading lists:", error);
+            console.error("Error loading lists:", error);
+            setError(error.message);
           }
+        } finally {
+          setLoading(false);
         }
       }
     };
-
+  
     loadLists();
-
+  
     return () => controller.abort();
-  }, [allboard.active]);
+  }, [allboard.active, fetchListsForBoard]);
 
+  // All original handler functions remain with useCallback
   const handleAttachmentUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
@@ -222,45 +239,62 @@ function Main() {
     setSelectedCard(null);
   }, []);
 
-  const saveCardChanges = useCallback(() => {
+  const saveCardChanges = useCallback(async () => {
     if (!selectedCard) return;
+    setIsSaving(true);
+    try {
+      // First update the title via API
+      const result = await updateCardTitle(selectedCard.id, editTitle);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update card title");
+      }
   
-    setAllBoard((prev) => {
-      const newState = {
-        ...prev,
-        boards: prev.boards.map(board => 
-          board.id === prev.active
-            ? {
-                ...board,
-                lists: board.lists.map((list, idx) => 
-                  idx === selectedCard.listIndex
-                    ? {
-                        ...list,
-                        items: list.items.map((item, cardIdx) =>
-                          cardIdx === selectedCard.cardIndex
-                            ? {
-                                ...item,
-                                title: editTitle,
-                                image: editImage,
-                                description: editDescription,
-                                comments,
-                                attachments,
-                              }
-                            : item
-                        )
-                      }
-                    : list
-                )
-              }
-            : board
-        )
-      };
-      localStorage.setItem('boardState', JSON.stringify(newState));
-      return newState;
-    });
+      // Then update the local state
+      setAllBoard((prev) => {
+        const newState = {
+          ...prev,
+          boards: prev.boards.map(board => 
+            board.id === prev.active
+              ? {
+                  ...board,
+                  lists: board.lists.map((list, idx) => 
+                    idx === selectedCard.listIndex
+                      ? {
+                          ...list,
+                          items: list.items.map((item, cardIdx) =>
+                            cardIdx === selectedCard.cardIndex
+                              ? {
+                                  ...item,
+                                  title: editTitle,
+                                  image: editImage,
+                                  description: editDescription,
+                                  comments,
+                                  attachments,
+                                }
+                              : item
+                          )
+                        }
+                      : list
+                  )
+                }
+              : board
+          )
+        };
+        localStorage.setItem('boardState', JSON.stringify(newState));
+        return newState;
+        
+      });
   
-    closePopup();
-  }, [selectedCard, editTitle, editImage, editDescription, comments, attachments]);
+      closePopup();
+    } catch (error) {
+      console.error("Error saving card changes:", error);
+      // Optionally show error to user
+      alert(`Failed to save changes: ${error.message}`);
+    }finally {
+      setIsSaving(false);
+    }
+  }, [selectedCard, editTitle, editImage, editDescription, comments, attachments, setAllBoard, closePopup, updateCardTitle]);
 
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -286,7 +320,7 @@ function Main() {
             ...newBoards[boardIndex],
             lists: [
               ...newBoards[boardIndex].lists,
-              result.data, // Use the list data from API response
+              result.data,
             ],
           };
 
@@ -315,23 +349,16 @@ function Main() {
       setListUpdateError(null);
 
       try {
-        console.log("Attempting to update list:", {
-          id: originalId,
-          title: editedListTitle,
-        }); // Debugging
-
         const result = await updateListTitle(originalId, editedListTitle);
-        console.log("Backend response:", result); // Debugging
 
         if (!result.success) {
           throw new Error(result.error);
         }
 
         if (result.data.id !== originalId) {
-          throw new Error("Server returned mismatched list ID"); // Check for backend inconsistency
+          throw new Error("Server returned mismatched list ID");
         }
 
-        // Update state with the original ID and new title
         setAllBoard((prev) => ({
           ...prev,
           boards: prev.boards.map((board) =>
@@ -346,9 +373,9 @@ function Main() {
           ),
         }));
       } catch (error) {
-        console.error("Error updating list:", error.message); // Debugging
+        console.error("Error updating list:", error.message);
         setListUpdateError(error.message);
-        setEditedListTitle(originalTitle); // Reset edited title on error
+        setEditedListTitle(originalTitle);
       } finally {
         setUpdatingListTitle(false);
         setEditingListIndex(null);
@@ -356,6 +383,7 @@ function Main() {
     },
     [activeBoard, editedListTitle, updateListTitle, setAllBoard]
   );
+
   useEffect(() => {
     const savedState = localStorage.getItem("boardState");
     if (savedState) {
@@ -365,45 +393,85 @@ function Main() {
       }
     }
   }, [setAllBoard]);
+
   const handleAddCard = async (listId, cardTitle) => {
-    const list = allboard.boards
-      .find((board) => board.id === allboard.active)
-      ?.lists.find((l) => l.id === listId);
-
-    if (!list) return;
-
-    const position = list.items.length;
-    const result = await createCard(listId, cardTitle, position);
-
-    if (result.success) {
-      setAllBoard((prev) => {
+    console.log('[Card Creation] Starting process for list:', listId,cardTitle );
+    
+    try {
+      const activeBoard = allboard.boards.find(b => b.id === allboard.active);
+      if (!activeBoard) throw new Error("No active board found");
+  
+      const targetList = activeBoard.lists?.find(l => l.id === listId);
+      if (!targetList) throw new Error(`List ${listId} not found`);
+  
+      // Calculate position - use server's preferred default if empty
+      const position = targetList.items?.length > 0 
+        ? targetList.items[targetList.items.length - 1].position + 1000 
+        : 1000;
+  
+      console.log('[Card Creation] Calling API with:', {
+        listId,
+        title: cardTitle,
+        position
+      });
+  
+      const result = await createCard(listId, cardTitle, position);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Unknown error creating card");
+      }
+  
+      console.log('[Card Creation] Success! Updating state...');
+      setAllBoard(prev => {
         const newState = {
           ...prev,
-          boards: prev.boards.map((board) =>
+          boards: prev.boards.map(board => 
             board.id === prev.active
               ? {
                   ...board,
-                  lists: board.lists.map((l) =>
-                    l.id === listId
-                      ? { ...l, items: [...l.items, result.data] }
-                      : l
-                  ),
+                  lists: board.lists.map(list => 
+                    list.id === listId
+                      ? {
+                          ...list,
+                          items: [...(list.items || []), {
+                            id: result.data.id,
+                            title: result.data.title,
+                            position: result.data.position,
+                            description: "",
+                            image: "",
+                            comments: [],
+                            attachments: []
+                          }]
+                        }
+                      : list
+                  )
                 }
               : board
-          ),
+          )
         };
-        localStorage.setItem("boardState", JSON.stringify(newState));
+        localStorage.setItem('boardState', JSON.stringify(newState));
         return newState;
       });
+  
+    } catch (error) {
+      console.error('[Card Creation] Failed:', {
+        error: error.message,
+        stack: error.stack,
+        listId,
+        cardTitle
+      });
+      // Consider adding user feedback here (e.g., toast notification)
     }
   };
 
+  // Original members array
   const members = [
     { id: 1, name: "Michael Scott", initials: "MS", color: "bg-purple-600" },
     { id: 2, name: "Sara Brown", initials: "SB", color: "bg-cyan-600" },
     { id: 3, name: "Akash Surya", initials: "AS", color: "bg-green-600" },
   ];
 
+  // Original conditional renders
   if (loading) return null;
   if (error) {
     return (
@@ -439,6 +507,7 @@ function Main() {
     );
   }
 
+  // Original JSX return remains exactly the same
   return (
     <div
       className="flex flex-col w-full overflow-x-auto content min-h-screen"
@@ -498,7 +567,6 @@ function Main() {
                             value={editedListTitle}
                             onChange={(e) => setEditedListTitle(e.target.value)}
                             onBlur={() => {
-                              // Only save if the title actually changed
                               if (editedListTitle !== list.title) {
                                 saveEditedList(listIndex);
                               }
@@ -568,7 +636,7 @@ function Main() {
                           style={{
                             overflowY: "auto",
                             minHeight: "40px",
-                            maxHeight: "calc(100vh - 200px)", // Adjust based on your layout
+                            maxHeight: "calc(100vh - 200px)",
                             paddingRight: "8px",
                           }}
                         >
@@ -605,9 +673,9 @@ function Main() {
                       )}
                     </Droppable>
                     <CardAdd
-                      listId={list.id}
-                      getcard={(cardTitle) => handleAddCard(list.id, cardTitle)}
-                    />
+  listId={list.id}
+  getcard={(cardTitle) => handleAddCard(list.id, cardTitle)}
+/>
                   </div>
                 ))}
                 <AddList getlist={listData} />
@@ -639,13 +707,19 @@ function Main() {
             <h3 className="text-lg mb-2 text-black mt-4 text-center">
               Edit Card
             </h3>
-            <input
-              type="text"
-              placeholder="Enter your Title"
-              className="w-full p-2 border rounded bg-white text-black"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-            />
+            <div className="mt-4">
+        <label className="text-black text-md mb-2 block">Card Title</label>
+        <input
+          type="text"
+          placeholder="Enter card title"
+          className="w-full p-2 border rounded bg-white text-black"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') saveCardChanges();
+          }}
+        />
+      </div>
             <input
               type="file"
               accept="image/*"
@@ -801,9 +875,12 @@ function Main() {
               </button>
               <button
                 onClick={saveCardChanges}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                Save
+                disabled={isSaving}
+  className={`px-4 py-2 text-white rounded ${
+    isSaving ? 'bg-blue-300' : 'bg-blue-500 hover:bg-blue-600'
+  }`}
+>
+  {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

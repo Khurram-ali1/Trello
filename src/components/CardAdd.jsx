@@ -1,58 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Plus } from 'react-feather';
 
 function CardAdd({ listId, getcard }) {
-  const [card, setCard] = useState('');
-  const [show, setShow] = useState(false);
+  const [cardTitle, setCardTitle] = useState('');
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const textareaRef = useRef(null);
 
-  const saveCard = () => {
-    if (!card) {
-      return;
+  // Auto-focus textarea when form opens
+  useEffect(() => {
+    if (isFormVisible && textareaRef.current) {
+      textareaRef.current.focus();
     }
+  }, [isFormVisible]);
+
+  const handleAddCard = async () => {  // Changed to async
+    if (!cardTitle.trim() || isAdding) return;
+    
     console.log("Adding card to list ID:", listId);
-    getcard(card);
-    setCard('');
-    setShow(false);
+    setIsAdding(true);
+    
+    try {
+      await getcard(cardTitle.trim());  // Wait for the card creation
+      setCardTitle('');
+      setIsFormVisible(false);
+    } catch (error) {
+      console.error("Failed to add card:", error);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  const closeBtn = () => {
-    setCard('');
-    setShow(false);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAddCard();
+    }
+  };
+
+  const handleClose = () => {
+    setCardTitle('');
+    setIsFormVisible(false);
   };
 
   return (
     <div className='flex flex-col'>
-      {show && (
-        <div>
+      {isFormVisible ? (
+        <div className='space-y-2'>
           <textarea
-            value={card}
-            onChange={(e) => setCard(e.target.value)}
-            className='p-1 w-full rounded-md outline-none bg-white'
-            placeholder='Enter Card Title...'
-            cols={30}
-            rows={2}
-          ></textarea>
-          <div className='flex p-1'>
-            <button onClick={saveCard} className='p-2 rounded bg-[#0c66e4] text-white mr-2'>
-              Add Card
+            ref={textareaRef}
+            value={cardTitle}
+            onChange={(e) => setCardTitle(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className='p-2 w-full rounded-md outline-none bg-white shadow-sm border border-gray-300 focus:border-blue-500 resize-none'
+            placeholder='Enter card title...'
+            rows={3}
+            disabled={isAdding}  // Disable during loading
+          />
+          <div className='flex items-center space-x-2'>
+            <button
+              onClick={handleAddCard}
+              disabled={isAdding}
+              className={`px-3 py-1.5 rounded text-white transition-colors ${
+                isAdding ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {isAdding ? (
+                <>
+                  <span className="inline-block animate-spin mr-2">↻</span>
+                  Adding...
+                </>
+              ) : 'Add card'}
             </button>
-            <button onClick={closeBtn} className='p-1 rounded hover:bg-gray-300'>
-              <X size={16} />
+            <button
+              onClick={handleClose}
+              disabled={isAdding}
+              className='p-1.5 rounded hover:bg-gray-200 transition-colors text-gray-600'
+              aria-label='Close'
+            >
+              <X size={18} />
             </button>
           </div>
         </div>
-      )}
-      {!show && (
+      ) : (
         <button
-          onClick={() => setShow(true)}
-          className='flex p-1 w-full justify-start rounded items-center mt-1 hover:bg-gray-300 h-8'
+          onClick={() => setIsFormVisible(true)}
+          className='flex items-center w-full p-2 rounded hover:bg-gray-200 transition-colors text-gray-700'
+          disabled={isAdding}
         >
-          <Plus size={16} />
-          Add a Card
+          <Plus size={16} className='mr-1' />
+          <span>{isAdding ? 'Adding card...' : 'Add a card'}</span>
         </button>
       )}
     </div>
   );
 }
 
-export default CardAdd;
+export default React.memo(CardAdd);
