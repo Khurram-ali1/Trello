@@ -1,14 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Plus, ChevronLeft, ChevronRight } from "react-feather";
 import Header from "./Header"; // Import the Header component
 import WorkspaceModal from "./WorkspaceModal";
 import img1 from "../assets/Background.jpg";
 import img2 from "../assets/Board.jpg";
 import ProtectedRoute from "./ProtectedRoute";
-
+import { BoardContext } from "../context/BoardContext";
+import { useNavigate } from "react-router-dom";
+ 
 const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false); // State for collapsed sidebar
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+
+  const [loadingWorkspaces, setLoadingWorkspaces] = useState(true);
+  const [workspaceError, setWorkspaceError] = useState(null);
+  const { workspaces, loading, error, fetchAllWorkspaces } =
+    useContext(BoardContext);
+  const navigate = useNavigate();
+
+  // Refresh workspaces when modal closes
+  const handleModalClose = () => {
+    setShowWorkspaceModal(false);
+    fetchAllWorkspaces();
+  };
+  const handleWorkspaceClick = (workspaceId) => {
+    // Open in new tab with workspace-specific URL
+    navigate(`/workspace/${workspaceId}`);
+  };
 
   return (
     <ProtectedRoute>
@@ -114,7 +132,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </section>
-
             {/* Recently Viewed */}
             <section className="mb-6">
               <h3 className="text-lg font-semibold mb-3">Recently Viewed</h3>
@@ -145,21 +162,68 @@ const Dashboard = () => {
                 </div>
               </div>
             </section>
-
-            {/* Workspaces */}
-            <section>
-              <h3 className="text-lg font-semibold mb-3">Your Workspaces</h3>
-              <div className="flex flex-row items-center">
-                <p className="text-white">
-                  You aren’t a member of any workspaces yet.
-                </p>
-                <div
+            
+            <section className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">
+                  Your Workspaces
+                </h2>
+                <button
                   onClick={() => setShowWorkspaceModal(true)}
-                  className="text-blue-500 hover:text-blue-400 cursor-pointer flex items-center justify-center gap-2 ml-2"
+                  className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
                 >
-                  <Plus size={16} /> Create a Workspace
-                </div>
+                  <Plus size={16} /> New Workspace
+                </button>
               </div>
+
+              {/* Workspace Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {workspaces.map((workspace) => (
+                  <div
+                    key={workspace.id}
+                    onClick={() => handleWorkspaceClick(workspace.id)}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Workspace Card */}
+                    <div className="h-40 rounded-lg bg-white shadow-md transition-all duration-200 group-hover:shadow-lg overflow-hidden border border-gray-200">
+                      {/* Card Content */}
+                      <div className="h-full flex flex-col justify-between p-4 text-black">
+                        <div>
+                          <h3 className="text-lg font-semibold truncate">
+                            {workspace.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {workspace.description || "No description"}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-end">
+                          <span className="text-sm text-gray-500">
+                            {workspace.boards?.length || 0} boards
+                          </span>
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            #{workspace.id}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Empty State */}
+              {workspaces.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    You don't have any workspaces yet
+                  </p>
+                  <button
+                    onClick={() => setShowWorkspaceModal(true)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Create Your First Workspace
+                  </button>
+                </div>
+              )}
             </section>
           </div>
         </div>

@@ -21,6 +21,59 @@ html {
 .content {
   display: flex;
   flex-wrap: nowrap;
-  height: calc(100vh - 48px); /* Adjust based on header height */
-  overflow:hidden ; /* Enables scrolling only if necessary */
+  height: calc(100vh - 48px); 
+  overflow:hidden ; 
 }
+
+.container {
+    overflow-x: auto;
+    overflow-y: hidden; 
+    min-height: 100vh;
+    display: flex;
+  }
+  
+  .draggable-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: grab;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  
+  .draggable-card:active {
+    cursor: grabbing;
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+  
+  .draggable-list {
+    transition: background-color 0.2s ease;
+    min-height: 100px;
+    position: relative;
+  }
+  
+  .drop-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #60a5fa;
+    border-radius: 3px;
+    z-index: 20;
+    pointer-events: none;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+ 

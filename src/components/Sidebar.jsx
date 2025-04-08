@@ -14,9 +14,10 @@ function Sidebar() {
   const [boardData, setBoardData] = useState(blankBoard);
   const [collapsed, setCollapsed] = useState(false);
   const [showpop, setShowPop] = useState(false);
-  const { allboard, setAllBoard, fetchBoards, setActiveBoard } = useContext(BoardContext);
+  const { allboard, setAllBoard, fetchBoards, setActiveBoard, currentUser } = useContext(BoardContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
@@ -46,9 +47,10 @@ function Sidebar() {
 
     try {
       const payload = {
-        name: boardData.name,
+        title: boardData.name,  // Changed from 'name' to 'title'
         background_color_code: boardData.bgcolor,
-        owner_id: 1,
+        user_id: 1,            // Changed from 'owner_id' to 'user_id'
+        workspace_id: 2         // Added required workspace_id (you may want to make this dynamic)
       };
 
       const response = await axios.post(
@@ -62,7 +64,7 @@ function Sidebar() {
       if (response.data.status === 1) {
         const newBoard = {
           id: response.data.board.board_id,
-          name: response.data.board.name,
+          name: response.data.board.title || response.data.board.name, // Handle both cases
           bgcolor: response.data.board.background_color_code,
           isActive: false,
           lists: []
